@@ -68,7 +68,7 @@ class AnnonceDetail(APIView):
         annonce = get_object_or_404(Annonce, pk=pk)
 
         if (
-            request.user != annonce.author
+            request.user != annonce.auteur
             and not request.user.is_staff
         ):
             return Response({"error": "Non autorisé"}, status=403)
@@ -85,7 +85,7 @@ class AnnonceDetail(APIView):
         annonce = get_object_or_404(Annonce, pk=pk)
 
         if (
-            request.user != annonce.author
+            request.user != annonce.auteur
             and not request.user.is_staff
         ):
             return Response({"error": "Non autorisé"}, status=403)
@@ -96,7 +96,6 @@ class AnnonceDetail(APIView):
 class AnnonceList(generics.ListAPIView):
     serializer_class = AnnonceSerializer
     permission_classes = [IsAuthenticated]
-
 
     def get_queryset(self):
         user = self.request.user
@@ -116,10 +115,9 @@ class AnnonceList(generics.ListAPIView):
 
         # Si étudiant → filtrage filière + niveau
         if user.role.role.lower() == "etudiant":
-
             queryset = queryset.filter(
-                Q(filiere_cible=user.filiere) | Q(filiere_cible__isnull=True),
-                Q(niveau_cible=user.niveau) | Q(niveau_cible__isnull=True)
+                Q(filiere=user.filiere) | Q(filiere__isnull=True),
+                Q(niveau=user.niveau) | Q(niveau__isnull=True)
             )
 
         return queryset
