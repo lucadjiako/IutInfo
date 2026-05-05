@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import AnnonceList, AnnonceDetail, Marquer_lu
-from rest_framework.permissions import IsAuthenticated
+from .views import AnnonceList, AnnonceDetail, MarquerLu, AnnonceStats
 
 urlpatterns = [
-    path("annonces/", AnnonceList.as_view(), name="annonces-list"),
-    path('announcements/<int:pk>/', AnnonceDetail.as_view(), name="announcements-detail"),
-    path('announcements/<int:pk>/read/', Marquer_lu.as_view(), name="announcements-read"),
+    path('',              AnnonceList.as_view(),   name='annonce-list'),
+    path('<int:pk>/',     AnnonceDetail.as_view(),  name='annonce-detail'),
+    path('<int:pk>/lu/',  MarquerLu.as_view(),      name='annonce-lu'),
+    path('<int:pk>/stats/', AnnonceStats.as_view(), name='annonce-stats'),
 ]

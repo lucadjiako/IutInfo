@@ -1,46 +1,99 @@
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
 
-# from django.utils import timezone
-from Bd_auth.models import Utilisateur, Role, Filiere, Niveau
-
-#creation de class annonce
 
 class Annonce(models.Model):
-    titre = models.CharField(max_length=255)
-    contenu = models.TextField()
-    date_creation = models.DateTimeField(auto_now_add=True)
-    date_publication = models.DateTimeField(auto_now_add=True)
-    auteur = models.ForeignKey(Utilisateur,on_delete=models.CASCADE,related_name="annonces")
-    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL ,null=True, blank=True)
-    niveau = models.ForeignKey(Niveau, on_delete=models.SET_NULL, null=True, blank=True)
-    role_cible = models.ForeignKey(Role,on_delete=models.CASCADE, null=True, blank=True)
-    
 
-    # def est_visible(self):
-    #     return self.date_publication <= timezone.now()
+    ROLE_CIBLE_CHOICES = (
+        ('tous',       'Tout le campus'),
+        ('etudiant',   'Étudiants'),
+        ('professeur', 'Professeurs'),
+    )
+
+    titre           = models.CharField(max_length=255)
+    contenu         = models.TextField()
+    auteur          = models.ForeignKey(
+                          settings.AUTH_USER_MODEL,
+                          on_delete=models.CASCADE,
+                          related_name='annonces'
+                      )
+
+    # ── Ciblage ───────────────────────────────────────────────
+    role_cible      = models.CharField(
+                          max_length=20,
+                          choices=ROLE_CIBLE_CHOICES,
+                          default='tous'
+                      )
+    filiere_cible   = models.CharField(max_length=100, blank=True, null=True,
+                          help_text="Laisser vide = toutes les filières")
+    niveau_cible    = models.CharField(max_length=10,  blank=True, null=True,
+                          help_text="Laisser vide = tous les niveaux")
+
+    # ── Dates ─────────────────────────────────────────────────
+    date_creation   = models.DateTimeField(auto_now_add=True)
+    date_publication = models.DateTimeField(
+                          default=timezone.now,
+                          help_text="Date/heure de publication (peut être dans le futur)"
+                      )
+    date_expiration  = models.DateTimeField(
+                          blank=True, null=True,
+                          help_text="Laisser vide = jamais expirée"
+                      )
+
+    class Meta:
+        ordering = ['-date_publication']
 
     def __str__(self):
         return self.titre
 
-#attachement de la piece jointe a l'annonce 
+    def est_publiee(self):
+        return self.date_publication <= timezone.now()
+
+    def est_expiree(self):
+        if self.date_expiration is None:
+            return False
+        return timezone.now() > self.date_expiration
+
+    def est_visible(self):
+        return self.est_publiee() and not self.est_expiree()
+
 
 class PieceJointe(models.Model):
-    annonce = models.ForeignKey(Annonce,on_delete=models.CASCADE,related_name="pieces_jointes" )
-    fichier = models.FileField(upload_to="annonces/")
+    annonce = models.ForeignKey(
+        Annonce, on_delete=models.CASCADE, related_name='pieces_jointes'
+    )
+    fichier    = models.FileField(upload_to='annonces/pieces_jointes/')
+    nom_fichier = models.CharField(max_length=255, blank=True)
+    taille      = models.PositiveIntegerField(default=0, help_text="Taille en octets")
+
+    def save(self, *args, **kwargs):
+        if self.fichier and not self.nom_fichier:
+            self.nom_fichier = self.fichier.name
+        if self.fichier and not self.taille:
+            self.taille = self.fichier.size
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Fichier pour {self.annonce.titre}"
-    
+        return f"{self.nom_fichier} → {self.annonce.titre}"
 
 
 class Lecture(models.Model):
-    annonce = models.ForeignKey(Annonce, on_delete=models.CASCADE, related_name="lectures")
-    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
-    Lu_à = models.DateTimeField(auto_now_add=True)
+    annonce     = models.ForeignKey(
+                      Annonce,
+                      on_delete=models.CASCADE,
+                      related_name='lectures'
+                  )
+    utilisateur = models.ForeignKey(
+                      settings.AUTH_USER_MODEL,
+                      on_delete=models.CASCADE,
+                      related_name='lectures'
+                  )
+    lu_a        = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('annonce', 'utilisateur') #Unique_togetherm c'est pour se rassurer qu4un utilisateur ne ;entionne pqs uune publication lu 
+        unique_together = ('annonce', 'utilisateur')
+        ordering        = ['-lu_a']
 
-    def __str__(self): 
-        return f"{self.utilisateur} a lu {self.annonce}"
-    
+    def __str__(self):
+        return f"{self.utilisateur.matricule} a lu « {self.annonce.titre} »"

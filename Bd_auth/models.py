@@ -1,56 +1,110 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
+from datetime import timedelta
 
-# Create your models here.
 
-class Role(models.Model):
-    role =models.CharField(max_length=30, unique=True)
-    
-    def __str__(self):
-        return self.role
-class Filiere(models.Model):
-    nom = models.CharField(max_length=100, unique=True)
+# ──────────────────────────────────────────────
+#  MANAGER PERSONNALISÉ
+# ──────────────────────────────────────────────
+class UtilisateurManager(BaseUserManager):
 
-    def __str__(self):
-        return self.nom
-   
-class Niveau(models.Model):
-    nom = models.CharField(max_length=100, unique=True)
+    def create_user(self, matricule, email, password=None, **extra_fields):
+        if not matricule:
+            raise ValueError("Le matricule est obligatoire")
+        if not email:
+            raise ValueError("L'email est obligatoire")
+        email = self.normalize_email(email)
+        user = self.model(matricule=matricule, email=email, **extra_fields)
+        if password:
+            user.set_password(password)
+        user.save(using=self._db)
+        return user
 
-    def __str__(self):
-        return self.nom
-    
-class Utilisateur(models.Model):
-    matricule = models.CharField(max_length=30, unique= True)
-    nom = models.CharField(max_length=100)
-    prenom = models.CharField(max_length=100)
-    email = models.EmailField(null=True, blank=True)
-    mot_de_passe = models.CharField(max_length=255, blank=True)
-    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL ,null=True, blank=True)
-    niveau = models.ForeignKey(Niveau, on_delete=models.SET_NULL, null=True, blank=True)
-    role= models.ForeignKey(Role, on_delete=models.PROTECT)
-    active= models.BooleanField(default= False) #faux par defaut pour nou permettre de savoir si le compte d'un utilisateu r est active ou non 
-    date_creation= models.DateTimeField(auto_now_add= True)
-    
-    def set_password(self, raw_password):
-        self.mot_de_passe = make_password(raw_password)
-        
-    def check_password(self, raw_password):
-        return check_password(raw_password,  self.mot_de_passe)
-    
-    def __str__(self):
-        return  f"{self.nom}, {self.prenom}, {self.matricule} {self.filiere} {self.niveau}"   
+    def create_superuser(self, matricule, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('active', True)
+        extra_fields.setdefault('role', 'admin')
+        return self.create_user(matricule, email, password, **extra_fields)
 
-class OTP(models.Model):
-    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
+
+# ──────────────────────────────────────────────
+#  MODÈLE UTILISATEUR
+# ──────────────────────────────────────────────
+class Utilisateur(AbstractBaseUser, PermissionsMixin):
+
+    ROLE_CHOICES = (
+        ('etudiant',   'Étudiant'),
+        ('professeur', 'Professeur'),
+        ('admin',      'Administrateur'),
+    )
+
+    # ── Identifiants ──────────────────────────
+    matricule = models.CharField(max_length=20, unique=True)
+    email     = models.EmailField(unique=True)
+
+    # ── Informations personnelles ─────────────
+    nom    = models.CharField(max_length=100)
+    prenom = models.CharField(max_length=100, blank=True, default='')
+    role   = models.CharField(max_length=20, choices=ROLE_CHOICES, default='etudiant')
+
+    # ── Champs Étudiant ───────────────────────
+    filiere = models.CharField(max_length=100, blank=True, null=True)
+    niveau  = models.CharField(max_length=10,  blank=True, null=True)
+
+    # ── Champs Professeur ─────────────────────
+    departement = models.CharField(max_length=100, blank=True, null=True)
+    specialite  = models.CharField(max_length=100, blank=True, null=True)
+
+    # ── Statut ────────────────────────────────
+    active       = models.BooleanField(default=False)   # compte activé par OTP
+    is_staff     = models.BooleanField(default=False)   # accès admin Django
+    is_superuser = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
-    is_valid = models.BooleanField(default=True)  
+    updated_at = models.DateTimeField(auto_now=True)
 
-   
-   
+    # ── Config AbstractBaseUser ───────────────
+    USERNAME_FIELD  = 'matricule'          # champ principal d'identification
+    REQUIRED_FIELDS = ['email', 'nom']
 
-    
-    # def __str__(self):
-        # return f"{self.role} - {self.matricule} - {self.prenom} {self.nom} - {self.filiere} - {self.niveau}"
- 
+    objects = UtilisateurManager()
+
+    class Meta:
+        ordering  = ['-created_at']
+        verbose_name = 'Utilisateur'
+
+    def __str__(self):
+        return f"{self.matricule} — {self.nom} {self.prenom} ({self.role})"
+
+    @property
+    def is_active(self):
+        """Django utilise is_active pour bloquer la connexion."""
+        return self.active
+
+    @property
+    def is_admin(self):
+        return self.is_staff or self.role == 'admin'
+
+
+# ──────────────────────────────────────────────
+#  OTP
+# ──────────────────────────────────────────────
+class OTP(models.Model):
+    utilisateur = models.ForeignKey(
+        Utilisateur, on_delete=models.CASCADE, related_name='otps'
+    )
+    code       = models.CharField(max_length=6)
+    is_valid   = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def is_expired(self):
+        """OTP valide pendant 10 minutes."""
+        return timezone.now() > self.created_at + timedelta(minutes=10)
+
+    def __str__(self):
+        return f"OTP {self.code} → {self.utilisateur.email}"

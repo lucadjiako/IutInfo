@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
-from .models import Utilisateur, Role, Filiere, Niveau, OTP
+from .models import Utilisateur, OTP
 import json
 
 
@@ -12,20 +12,15 @@ class UtilisateurSetupMixin:
     def setUp(self):
         self.client = APIClient()
         
-        # Créer les rôles, filières et niveaux
-        self.role = Role.objects.create(role="Etudiant")
-        self.filiere = Filiere.objects.create(nom="Informatique")
-        self.niveau = Niveau.objects.create(nom="L2")
-        
         # Créer un utilisateur inactif (pour activation)
         self.user_inactive = Utilisateur.objects.create(
             matricule="MT001",
             nom="Dupont",
             prenom="Jean",
             email="jean@example.com",
-            filiere=self.filiere,
-            niveau=self.niveau,
-            role=self.role,
+            filiere="Informatique",
+            niveau="L2",
+            role="etudiant",
             active=False
         )
         
@@ -35,9 +30,9 @@ class UtilisateurSetupMixin:
             nom="Martin",
             prenom="Marie",
             email="marie@example.com",
-            filiere=self.filiere,
-            niveau=self.niveau,
-            role=self.role,
+            filiere="Informatique",
+            niveau="L2",
+            role="etudiant",
             active=True
         )
         self.user_active.set_password("password123")
