@@ -9,7 +9,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .models import Annonce, PieceJointe, Lecture
-from .serializers import AnnonceSerializer, AnnonceCreateSerializer
+ 
+from .serializers import (
+    AnnonceListSerializer,
+    AnnonceDetailSerializer,
+    AnnonceCreateSerializer,
+    AnnonceCreateSerializer
+)
 
 
 # ──────────────────────────────────────────────
@@ -100,8 +106,17 @@ class AnnonceList(APIView):
         if role:
             qs = qs.filter(role_cible=role)
 
-        serializer = AnnonceSerializer(qs, many=True, context={'request': request})
+        q = request.query_params.get('q')
+        
+        if q: ## recherche texte dans le titre ou le contenu
+            qs = qs.filter(
+                 Q(titre__icontains=q) |
+                Q(contenu__icontains=q)
+                )
+
+        serializer = AnnonceListSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
     def post(self, request):
         """
@@ -131,10 +146,10 @@ class AnnonceList(APIView):
                 taille=f.size,
             )
 
-        return Response(
-            AnnonceSerializer(annonce, context={'request': request}).data,
-            status=status.HTTP_201_CREATED
-        )
+            return Response(
+                AnnonceDetailSerializer(annonce, context={'request': request}).data,
+                status=status.HTTP_201_CREATED
+            )
 
 
 # ──────────────────────────────────────────────
@@ -155,7 +170,7 @@ class AnnonceDetail(APIView):
     def get(self, request, pk):
         """GET /api/annonces/{id}/"""
         annonce    = self._get_annonce(pk, request.user)
-        serializer = AnnonceSerializer(annonce, context={'request': request})
+        serializer = AnnonceDetailSerializer(annonce, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
@@ -175,8 +190,8 @@ class AnnonceDetail(APIView):
         annonce = serializer.save()
 
         return Response(
-            AnnonceSerializer(annonce, context={'request': request}).data,
-            status=status.HTTP_200_OK
+            AnnonceDetailSerializer(annonce, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
         )
 
     def delete(self, request, pk):

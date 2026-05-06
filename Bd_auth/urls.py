@@ -11,6 +11,10 @@ from .views import (
     CreateAdmin,
     ImportUsers,
     PromoteToAdmin,
+    SearchUsers,
+    DeactivateUser,
+    DemoteAdmin
+    
 )
 
 urlpatterns = [
@@ -31,5 +35,8 @@ urlpatterns = [
     # ── Admin ───────────────────────────────────────────────
     path('create-admin/',      CreateAdmin.as_view(),    name='auth-create-admin'),
     path('promote-to-admin/',  PromoteToAdmin.as_view(), name='auth-promote-admin'),
+    path('search-users/', SearchUsers.as_view(), name='search-users'),
+    path('deactivate-user/', DeactivateUser.as_view(), name='deactivate-user'),
+    path('demote-admin/', DemoteAdmin.as_view(), name='demote-admin'),
     path('import-users/',      ImportUsers.as_view(),    name='auth-import-users'),
 ]

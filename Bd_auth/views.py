@@ -13,6 +13,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from django.db.models import Q
 
 from .models import Utilisateur, OTP
 from .serializers import (
@@ -599,6 +600,7 @@ class ImportUsers(APIView):
                         matricule=matricule,
                         email=email,
                         nom=nom,
+                        prenom=row.get('prenom', '').strip() or None,
                         departement=row.get('departement', '').strip() or None,
                         specialite=row.get('specialite', '').strip() or None,
                         role='professeur',
@@ -749,6 +751,206 @@ class PromoteToAdmin(APIView):
                     "prenom":    utilisateur.prenom,
                     "role":      utilisateur.role,
                     "is_staff":  utilisateur.is_staff,
+                },
+            },
+            status=status.HTTP_200_OK
+            
+        )
+
+# ──────────────────────────────────────────────
+#  RECHERCHE UTILISATEURS
+# ──────────────────────────────────────────────
+class SearchUsers(APIView):
+    """
+    GET /api/auth/search-users/?q=...
+    Recherche par matricule, nom, prénom ou email.
+    Réservé aux admins.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Accès refusé. Réservé aux administrateurs."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        q = request.query_params.get('q', '').strip()
+
+        if not q:
+            return Response(
+                {"error": "Paramètre de recherche requis."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        utilisateurs = Utilisateur.objects.filter(
+            Q(matricule__icontains=q) |
+            Q(nom__icontains=q)       |
+            Q(prenom__icontains=q)    |
+            Q(email__icontains=q)
+        ).exclude(matricule=request.user.matricule)
+
+        data = [
+            {
+                "matricule":  u.matricule,
+                "email":      u.email,
+                "nom":        u.nom,
+                "prenom":     u.prenom,
+                "role":       u.role,
+                "is_staff":   u.is_staff,
+                "active":     u.active,
+            }
+            for u in utilisateurs
+        ]
+
+        return Response({"results": data, "count": len(data)}, status=status.HTTP_200_OK)
+
+
+# ──────────────────────────────────────────────
+#  RETIRER DROITS ADMIN
+# ──────────────────────────────────────────────
+class DemoteAdmin(APIView):
+    """
+    POST /api/auth/demote-admin/
+    Retire les droits admin d'un professeur promu.
+    Seul le superadmin peut faire ça.
+    Body: { "matricule": "PROF001" }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Accès refusé. Seul l'administrateur principal peut retirer les droits admin."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        matricule = request.data.get('matricule', '').strip()
+
+        if not matricule:
+            return Response(
+                {"error": "Le matricule est requis."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            utilisateur = Utilisateur.objects.get(matricule=matricule)
+        except Utilisateur.DoesNotExist:
+            return Response(
+                {"error": f"Aucun utilisateur trouvé avec le matricule {matricule}."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Vérifications
+        if utilisateur.is_superuser:
+            return Response(
+                {"error": "Impossible de retirer les droits au superadmin."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not utilisateur.is_staff:
+            return Response(
+                {"error": f"{utilisateur.nom} n'est pas administrateur."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Retrait des droits
+        utilisateur.is_staff = False
+        utilisateur.role     = 'professeur'
+        utilisateur.save()
+
+        # Notifier l'utilisateur
+        send_mail(
+            subject="Modification de vos droits — IUT",
+            message=(
+                f"Bonjour {utilisateur.nom},\n\n"
+                f"Vos droits d'administrateur ont été retirés par "
+                f"{request.user.nom} {request.user.prenom}.\n\n"
+                f"Vous redevenez professeur sur la plateforme IUT."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[utilisateur.email],
+            fail_silently=True,
+        )
+
+        return Response(
+            {
+                "message": f"Les droits admin de {utilisateur.nom} {utilisateur.prenom} ont été retirés.",
+                "utilisateur": {
+                    "matricule": utilisateur.matricule,
+                    "email":     utilisateur.email,
+                    "nom":       utilisateur.nom,
+                    "prenom":    utilisateur.prenom,
+                    "role":      utilisateur.role,
+                    "is_staff":  utilisateur.is_staff,
+                },
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+# ──────────────────────────────────────────────
+#  DÉSACTIVER UN COMPTE
+# ──────────────────────────────────────────────
+class DeactivateUser(APIView):
+    """
+    POST /api/auth/deactivate-user/
+    Désactive un compte (active=False) sans le supprimer.
+    Seul le superadmin peut faire ça.
+    Body: { "matricule": "ETU001" }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Accès refusé. Seul l'administrateur principal peut désactiver un compte."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        matricule = request.data.get('matricule', '').strip()
+
+        if not matricule:
+            return Response(
+                {"error": "Le matricule est requis."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            utilisateur = Utilisateur.objects.get(matricule=matricule)
+        except Utilisateur.DoesNotExist:
+            return Response(
+                {"error": f"Aucun utilisateur trouvé avec le matricule {matricule}."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Vérifications
+        if utilisateur.is_superuser:
+            return Response(
+                {"error": "Impossible de désactiver le superadmin."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not utilisateur.active:
+            return Response(
+                {"error": f"Le compte de {utilisateur.nom} est déjà désactivé."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Désactivation
+        utilisateur.active = False
+        utilisateur.save()
+
+        return Response(
+            {
+                "message": f"Le compte de {utilisateur.nom} {utilisateur.prenom} a été désactivé.",
+                "utilisateur": {
+                    "matricule": utilisateur.matricule,
+                    "email":     utilisateur.email,
+                    "nom":       utilisateur.nom,
+                    "prenom":    utilisateur.prenom,
+                    "role":      utilisateur.role,
+                    "active":    utilisateur.active,
                 },
             },
             status=status.HTTP_200_OK
