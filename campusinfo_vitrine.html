@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CampusInfo — IUT de Douala</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#006190",
+        "on-primary": "#ffffff",
+        "primary-container": "#007bb5",
+        "on-primary-container": "#fcfcff",
+        "primary-fixed": "#cae6ff",
+        "primary-fixed-dim": "#8ecdff",
+        "on-primary-fixed": "#001e30",
+        "secondary": "#446083",
+        "on-secondary": "#ffffff",
+        "secondary-container": "#b9d7ff",
+        "on-secondary-container": "#415d80",
+        "tertiary": "#994100",
+        "on-tertiary": "#ffffff",
+        "tertiary-container": "#c05400",
+        "on-tertiary-container": "#fffbff",
+        "tertiary-fixed": "#ffdbca",
+        "tertiary-fixed-dim": "#ffb690",
+        "on-tertiary-fixed": "#341100",
+        "background": "#f4faff",
+        "on-background": "#151d20",
+        "surface": "#f4faff",
+        "on-surface": "#151d20",
+        "surface-variant": "#dce3e8",
+        "on-surface-variant": "#3f4850",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#eef5fa",
+        "surface-container": "#e8eff4",
+        "surface-container-high": "#e2e9ee",
+        "surface-container-highest": "#dce3e8",
+        "inverse-surface": "#2a3135",
+        "inverse-on-surface": "#ebf2f7",
+        "outline": "#6f7881",
+        "outline-variant": "#bfc7d1",
+      },
+      fontFamily: {
+        "syne": ["Syne", "sans-serif"],
+        "jakarta": ["Plus Jakarta Sans", "sans-serif"],
+      },
+      spacing: {
+        "margin-desktop": "80px",
+        "margin-mobile": "16px",
+        "gutter": "24px",
+        "xs": "4px",
+        "sm": "12px",
+        "md": "24px",
+        "lg": "48px",
+        "xl": "80px",
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px",
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  /* ——— NAV ——— */
+  .glass-nav {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(191,199,209,0.4);
+  }
+
+  /* ——— HERO ——— */
+  .hero-bg {
+    background-color: #0C2E4E;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(27,143,206,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 10%, rgba(42,170,225,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 90%, rgba(0,97,144,0.4) 0%, transparent 45%);
+  }
+
+  /* ——— PARTICLE ——— */
+  .particle {
+    position: absolute;
+    background: rgba(255,255,255,0.45);
+    border-radius: 50%;
+    animation: floatP 10s infinite ease-in-out;
+  }
+  @keyframes floatP {
+    0%   { transform: translateY(0) translateX(0); opacity: 0.4; }
+    50%  { transform: translateY(-80px) translateX(15px); opacity: 0.8; }
+    100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+  }
+
+  /* ——— GLASS CARD ——— */
+  .glass-card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid #DDEAF6;
+    box-shadow: 0 4px 14px rgba(0,97,144,0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-3px);
+    border-color: #006190;
+    box-shadow: 0 10px 28px rgba(0,97,144,0.12), 0 0 12px rgba(249,115,22,0.15);
+  }
+  .academic-border { border-top: 4px solid #006190; }
+
+  /* ——— GLOW BTN ——— */
+  .glow-cta {
+    background: #F97316;
+    color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 rgba(249,115,22,0);
+  }
+  .glow-cta:hover {
+    box-shadow: 0 0 20px rgba(249,115,22,0.55);
+    transform: scale(1.03);
+  }
+  .btn-outline-white {
+    border: 2px solid rgba(238,245,250,0.7);
+    color: #eef5fa;
+    background: transparent;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-white:hover {
+    background: rgba(238,245,250,0.15);
+  }
+
+  /* ——— MESH (light sections) ——— */
+  .mesh-light {
+    background-image:
+      radial-gradient(at 10% 20%, rgba(202,230,255,0.45) 0%, transparent 50%),
+      radial-gradient(at 90% 80%, rgba(178,215,255,0.3) 0%, transparent 50%);
+    background-color: #f4faff;
+  }
+
+  /* ——— TIMELINE ——— */
+  .timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #006190, #bfc7d1);
+    transform: translateX(-50%);
+  }
+  .timeline-dot {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: #006190;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 6px rgba(0,97,144,0.12);
+  }
+
+  /* ——— REVEAL ANIMATION ——— */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ——— MOBILE MENU ——— */
+  #mobile-menu { display: none; }
+  #mobile-menu.open { display: flex; }
+
+  /* ——— HERO MOCK CARD ——— */
+  .hero-mock {
+    transform: rotate(2.5deg);
+    transition: transform 0.5s ease;
+  }
+  .hero-mock:hover { transform: rotate(0deg); }
+
+  /* ——— BADGE ——— */
+  .badge-sec {
+    background: #b9d7ff;
+    color: #415d80;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 4px 14px;
+    border-radius: 9999px;
+  }
+
+  /* ——— FOOTER ——— */
+  .footer-bg { background: #151d20; }
+</style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-x-hidden">
+
+<!-- ═══════════════════════════ NAV ═══════════════════════════ -->
+<header class="glass-nav sticky top-0 z-50 w-full">
+  <div class="max-w-7xl mx-auto flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16">
+    <!-- Logo -->
+    <a href="#accueil" class="font-syne font-bold text-xl text-primary tracking-tight">Campus<span class="text-tertiary-container">Info</span></a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-md">
+      <a href="#accueil"    class="nav-link text-primary border-b-2 border-primary pb-0.5 font-jakarta text-sm font-semibold tracking-wide">Accueil</a>
+      <a href="#features"   class="nav-link text-on-surface-variant hover:text-primary transition-colors font-jakarta text-sm font-semibold tracking-wide">Fonctionnalités</a>
+      <a href="#how-works"  class="nav-link text-on-surface-variant hover:text-primary transition-colors font-jakarta text-sm font-semibold tracking-wide">Comment ça marche</a>
+      <a href="#about"      class="nav-link text-on-surface-variant hover:text-primary transition-colors font-jakarta text-sm font-semibold tracking-wide">À propos</a>
+    </nav>
+
+    <!-- CTA + burger -->
+    <div class="flex items-center gap-sm">
+      <a href="#accueil" class="glow-cta px-lg py-sm rounded-full font-jakarta text-sm font-semibold hidden md:inline-flex items-center gap-xs">
+        Accéder à l'app
+      </a>
+      <button id="burger" class="md:hidden text-primary" aria-label="Menu">
+        <span class="material-symbols-outlined text-3xl">menu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="flex-col gap-sm px-margin-mobile pb-md pt-sm border-t border-outline-variant/30 bg-white/95">
+    <a href="#accueil"   class="text-primary font-jakarta text-sm font-semibold py-2">Accueil</a>
+    <a href="#features"  class="text-on-surface-variant font-jakarta text-sm font-semibold py-2">Fonctionnalités</a>
+    <a href="#how-works" class="text-on-surface-variant font-jakarta text-sm font-semibold py-2">Comment ça marche</a>
+    <a href="#about"     class="text-on-surface-variant font-jakarta text-sm font-semibold py-2">À propos</a>
+    <a href="#accueil"   class="glow-cta text-center py-sm rounded-full font-jakarta text-sm font-semibold mt-sm">Accéder à l'app</a>
+  </div>
+</header>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section id="accueil" class="hero-bg relative min-h-screen flex items-center justify-center overflow-hidden px-margin-mobile md:px-margin-desktop py-xl">
+  <!-- Blur orbs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute w-[700px] h-[700px] rounded-full bg-[#1B8FCE] mix-blend-screen blur-[160px] opacity-60 -top-32 -left-24 animate-pulse"></div>
+    <div class="absolute w-[500px] h-[500px] rounded-full bg-[#006190] mix-blend-screen blur-[120px] opacity-50 bottom-0 right-0"></div>
+    <!-- Particles -->
+    <div class="particle w-2 h-2" style="left:10%;top:22%;animation-duration:8s;animation-delay:0s"></div>
+    <div class="particle w-3 h-3" style="left:78%;top:38%;animation-duration:12s;animation-delay:2s"></div>
+    <div class="particle w-1.5 h-1.5" style="left:42%;top:68%;animation-duration:10s;animation-delay:1s"></div>
+    <div class="particle w-4 h-4" style="left:62%;top:12%;animation-duration:14s;animation-delay:3s"></div>
+    <div class="particle w-2.5 h-2.5" style="left:22%;top:78%;animation-duration:9s;animation-delay:4s"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl w-full mx-auto flex flex-col md:flex-row items-center gap-lg">
+    <!-- Text -->
+    <div class="flex-1 text-center md:text-left space-y-md">
+      <!-- Pill badge -->
+      <div class="inline-flex items-center gap-xs bg-white/15 backdrop-blur-md border border-white/25 px-sm py-xs rounded-full text-white text-xs font-semibold font-jakarta mb-sm">
+        <span class="material-symbols-outlined text-[#ffb690] text-base" style="font-variation-settings:'FILL' 1">school</span>
+        Projet académique — IUT Douala
+      </div>
+
+      <h1 class="font-syne font-extrabold text-white leading-tight" style="font-size:clamp(32px,5vw,56px);letter-spacing:-0.02em">
+        Centralisez l'information,<br/>
+        <span class="text-[#ffb690]">Boostez</span> votre réussite académique
+      </h1>
+
+      <p class="font-jakarta text-lg text-white/80 max-w-xl mx-auto md:mx-0" style="line-height:1.65">
+        La plateforme officielle d'annonces et notifications pour l'IUT de Douala. Connectant étudiants, professeurs et administration dans un écosystème numérique unifié.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-md pt-sm">
+        <a href="#" class="glow-cta w-full sm:w-auto text-center px-lg py-sm rounded-full font-jakarta text-sm font-semibold">
+          Accéder à l'app
+        </a>
+        <a href="#features" class="btn-outline-white w-full sm:w-auto text-center px-lg py-sm rounded-full font-jakarta text-sm font-semibold">
+          Découvrir les fonctionnalités
+        </a>
+      </div>
+
+      <!-- Tech badges -->
+      <div class="flex flex-wrap items-center justify-center md:justify-start gap-md pt-lg text-white/70 text-xs font-semibold font-jakarta">
+        <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[#ffb690] text-base">language</span>100% Web App</span>
+        <span class="w-1 h-1 rounded-full bg-white/40"></span>
+        <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[#ffb690] text-base">notifications_active</span>FCM Push Notif</span>
+        <span class="w-1 h-1 rounded-full bg-white/40"></span>
+        <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[#ffb690] text-base">api</span>API REST + JWT</span>
+      </div>
+    </div>
+
+    <!-- Mock card -->
+    <div class="flex-1 w-full max-w-sm hidden md:block">
+      <div class="hero-mock glass-card rounded-xl overflow-hidden border-t-4 border-t-[#c05400]">
+        <!-- Mock header -->
+        <div class="bg-white/90 px-md py-sm flex items-center justify-between border-b border-outline-variant/30">
+          <span class="font-syne font-bold text-primary text-sm">CampusInfo</span>
+          <div class="flex gap-xs">
+            <div class="w-2.5 h-2.5 rounded-full bg-[#F97316]"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-primary/40"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-outline-variant"></div>
+          </div>
+        </div>
+        <!-- Mock notification -->
+        <div class="p-md space-y-sm bg-white/80">
+          <p class="font-jakarta text-xs text-on-surface-variant font-semibold tracking-wider uppercase">Dernières annonces</p>
+          <div class="glass-card rounded-lg p-sm academic-border">
+            <div class="flex items-center gap-xs mb-xs">
+              <span class="w-2 h-2 rounded-full bg-[#F97316]"></span>
+              <span class="font-jakarta text-xs font-bold text-primary">URGENT</span>
+              <span class="text-xs text-outline ml-auto">Il y a 5 min</span>
+            </div>
+            <p class="font-jakarta text-sm font-semibold text-on-surface">Modification emploi du temps — Génie Info L3</p>
+            <p class="font-jakarta text-xs text-on-surface-variant mt-xs">Le cours de Réseaux du Jeudi est avancé à 08h00. Salle B12.</p>
+          </div>
+          <div class="glass-card rounded-lg p-sm">
+            <div class="flex items-center gap-xs mb-xs">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="font-jakarta text-xs font-bold text-secondary">INFO</span>
+              <span class="text-xs text-outline ml-auto">Hier</span>
+            </div>
+            <p class="font-jakarta text-sm font-semibold text-on-surface">Résultats examens — Session 2 disponibles</p>
+          </div>
+          <div class="glass-card rounded-lg p-sm opacity-70">
+            <div class="flex items-center gap-xs mb-xs">
+              <span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+              <span class="font-jakarta text-xs font-bold text-outline">GÉNÉRAL</span>
+              <span class="text-xs text-outline ml-auto">2j</span>
+            </div>
+            <p class="font-jakarta text-sm font-semibold text-on-surface-variant">Réunion pédagogique — Amphithéâtre A</p>
+          </div>
+          <!-- Push notif badge -->
+          <div class="flex items-center gap-sm bg-primary/10 rounded-lg p-sm border border-primary/20">
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">notifications_active</span>
+            <p class="font-jakarta text-xs text-primary font-semibold">3 nouvelles notifications push reçues</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll cue -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 animate-bounce hidden md:flex flex-col items-center gap-xs">
+    <span class="font-jakarta text-xs">Défiler</span>
+    <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FEATURES ═══════════════════════════ -->
+<section id="features" class="mesh-light py-xl px-margin-mobile md:px-margin-desktop">
+  <div class="max-w-7xl mx-auto">
+    <!-- Heading -->
+    <div class="text-center mb-lg reveal">
+      <span class="badge-sec mb-md inline-block">FONCTIONNALITÉS</span>
+      <h2 class="font-syne font-bold text-on-background" style="font-size:clamp(28px,4vw,40px)">
+        Explorez la puissance de <span class="text-primary">CampusInfo</span>
+      </h2>
+      <p class="font-jakarta text-on-surface-variant text-lg max-w-2xl mx-auto mt-sm" style="line-height:1.65">
+        Des outils sur mesure pour l'administration et une expérience fluide pour les étudiants de l'IUT de Douala.
+      </p>
+    </div>
+
+    <!-- ── Administration ── -->
+    <div class="mb-lg">
+      <div class="text-center mb-md reveal">
+        <span class="badge-sec mb-sm inline-block">POUR L'ADMINISTRATION</span>
+        <h3 class="font-syne font-bold text-2xl text-on-background">Contrôle Total &amp; Efficacité</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+        <!-- Card -->
+        <div class="glass-card rounded-xl p-md academic-border reveal">
+          <div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center mb-sm">
+            <span class="material-symbols-outlined text-white text-xl">edit_document</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-primary mb-xs">Gestion des annonces</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant mb-sm" style="line-height:1.6">Interface CRUD complète pour créer, modifier et supprimer des communications officielles. Intégration de pièces jointes PDF et Word.</p>
+          <div class="flex gap-xs flex-wrap">
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">CRUD</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">Multi-formats</span>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-md academic-border reveal">
+          <div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center mb-sm">
+            <span class="material-symbols-outlined text-white text-xl">upload_file</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-primary mb-xs">Importation massive</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant mb-sm" style="line-height:1.6">Importation par lots de listes d'étudiants via des fichiers standardisés CSV ou XML. Gain de temps considérable à l'échelle institutionnelle.</p>
+          <div class="flex gap-xs flex-wrap">
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">CSV / XML</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">Batch Processing</span>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-md academic-border reveal">
+          <div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center mb-sm">
+            <span class="material-symbols-outlined text-white text-xl">insights</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-primary mb-xs">Statistiques de lecture</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant mb-sm" style="line-height:1.6">Suivi en temps réel de l'engagement étudiant. Visualisez instantanément qui a lu et accusé réception des annonces critiques.</p>
+          <div class="flex gap-xs flex-wrap">
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">Real-time</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">Analytics</span>
+          </div>
+        </div>
+        <div class="glass-card rounded-xl p-md academic-border reveal">
+          <div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center mb-sm">
+            <span class="material-symbols-outlined text-white text-xl">manage_accounts</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-primary mb-xs">Gestion des comptes</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant mb-sm" style="line-height:1.6">Administration centralisée des accès. Promotions admin, désactivations de comptes et réinitialisations sécurisées via OTP.</p>
+          <div class="flex gap-xs flex-wrap">
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">RBAC</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">Lifecycle</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Étudiants ── -->
+    <div class="mb-lg">
+      <div class="text-center mb-md reveal">
+        <span class="badge-sec mb-sm inline-block">POUR LES ÉTUDIANTS</span>
+        <h3 class="font-syne font-bold text-2xl text-on-background">Une Expérience Intuitive</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        <div class="glass-card rounded-xl p-md text-center flex flex-col items-center reveal">
+          <div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-sm border border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-3xl">notifications_active</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-on-background mb-xs">Notifications Push</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant" style="line-height:1.6">Soyez alerté instantanément des nouvelles annonces, résultats ou changements d'emploi du temps directement sur votre appareil.</p>
+          <span class="mt-sm bg-[#ffdbca] text-[#341100] text-xs font-semibold px-sm py-1 rounded-full">Firebase FCM</span>
+        </div>
+        <div class="glass-card rounded-xl p-md text-center flex flex-col items-center reveal">
+          <div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-sm border border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-3xl">inventory_2</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-on-background mb-xs">Accès aux Archives</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant" style="line-height:1.6">Retrouvez facilement les communications passées grâce à un système d'archivage intelligent et automatisé.</p>
+          <span class="mt-sm bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">APScheduler</span>
+        </div>
+        <div class="glass-card rounded-xl p-md text-center flex flex-col items-center reveal">
+          <div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-sm border border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-3xl">shield_person</span>
+          </div>
+          <h4 class="font-syne font-bold text-lg text-on-background mb-xs">Profil Personnel</h4>
+          <p class="font-jakarta text-sm text-on-surface-variant" style="line-height:1.6">Gérez vos informations dans un espace privé sécurisé, protégé par une authentification OTP et des tokens JWT.</p>
+          <span class="mt-sm bg-surface-variant text-on-surface-variant text-xs font-semibold px-sm py-1 rounded-full">OTP + JWT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Architecture ── -->
+    <div class="bg-surface-container-low border border-surface-variant rounded-2xl p-lg reveal">
+      <h3 class="font-syne font-bold text-xl text-on-background mb-xs">Architecture &amp; Sécurité</h3>
+      <p class="font-jakarta text-on-surface-variant mb-lg" style="line-height:1.6">Une infrastructure moderne conçue pour la fiabilité, la sécurité des données académiques et des performances optimales.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        <div class="flex gap-sm items-start">
+          <span class="material-symbols-outlined text-tertiary bg-[#ffdbca] p-2 rounded-lg text-xl flex-shrink-0">mark_email_read</span>
+          <div>
+            <h5 class="font-jakarta font-bold text-on-background text-sm mb-xs">Authentification OTP</h5>
+            <p class="font-jakarta text-xs text-on-surface-variant" style="line-height:1.6">Vérification par email via codes à usage unique — seuls les membres légitimes de l'IUT accèdent à la plateforme.</p>
+          </div>
+        </div>
+        <div class="flex gap-sm items-start">
+          <span class="material-symbols-outlined text-tertiary bg-[#ffdbca] p-2 rounded-lg text-xl flex-shrink-0">token</span>
+          <div>
+            <h5 class="font-jakarta font-bold text-on-background text-sm mb-xs">Tokens JWT</h5>
+            <p class="font-jakarta text-xs text-on-surface-variant" style="line-height:1.6">Sessions sécurisées avec JSON Web Tokens et rafraîchissement automatique pour une expérience sans coupure.</p>
+          </div>
+        </div>
+        <div class="flex gap-sm items-start">
+          <span class="material-symbols-outlined text-tertiary bg-[#ffdbca] p-2 rounded-lg text-xl flex-shrink-0">auto_mode</span>
+          <div>
+            <h5 class="font-jakarta font-bold text-on-background text-sm mb-xs">Archivage Automatique</h5>
+            <p class="font-jakarta text-xs text-on-surface-variant" style="line-height:1.6">Maintenance orchestrée par APScheduler — les annonces expirées sont archivées puis supprimées automatiquement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ HOW IT WORKS ═══════════════════════════ -->
+<section id="how-works" class="py-xl px-margin-mobile md:px-margin-desktop bg-white">
+  <div class="max-w-5xl mx-auto">
+    <!-- Heading -->
+    <div class="text-center mb-lg reveal">
+      <span class="badge-sec mb-md inline-block">COMMENT ÇA MARCHE</span>
+      <h2 class="font-syne font-bold text-on-background" style="font-size:clamp(28px,4vw,40px)">Comment ça marche ?</h2>
+      <p class="font-jakarta text-on-surface-variant text-lg max-w-2xl mx-auto mt-sm" style="line-height:1.65">
+        Un flux de communication optimisé, de l'administration jusqu'à vous, en toute sécurité.
+      </p>
+    </div>
+
+    <!-- ── Parcours étudiant ── -->
+    <h3 class="font-syne font-bold text-xl text-secondary text-center mb-lg reveal">Parcours Étudiant</h3>
+    <div class="relative">
+      <div class="timeline-line hidden md:block"></div>
+      <!-- Steps -->
+      <div class="space-y-lg">
+
+        <!-- Step 1 -->
+        <div class="flex flex-col md:flex-row items-center gap-md reveal">
+          <div class="flex-1 text-right hidden md:block">
+            <h4 class="font-syne font-bold text-lg text-primary mb-xs">Réception des identifiants</h4>
+            <p class="font-jakarta text-sm text-on-surface-variant">L'administration vous transmet vos informations de connexion sécurisées (matricule).</p>
+          </div>
+          <div class="timeline-dot">1</div>
+          <div class="flex-1 md:block">
+            <div class="md:hidden text-center">
+              <h4 class="font-syne font-bold text-lg text-primary mb-xs">Réception des identifiants</h4>
+              <p class="font-jakarta text-sm text-on-surface-variant">L'administration vous transmet vos informations de connexion sécurisées.</p>
+            </div>
+            <div class="hidden md:block glass-card rounded-xl p-sm border-l-4 border-l-primary">
+              <p class="font-jakarta text-xs text-on-surface-variant">Votre matricule est importé depuis le fichier CSV officiel de l'IUT.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex flex-col md:flex-row-reverse items-center gap-md reveal">
+          <div class="flex-1 text-left hidden md:block">
+            <h4 class="font-syne font-bold text-lg text-primary mb-xs">Activation du compte</h4>
+            <p class="font-jakarta text-sm text-on-surface-variant">Utilisez votre matricule et définissez votre mot de passe lors de la première connexion.</p>
+          </div>
+          <div class="timeline-dot bg-[#007bb5]">2</div>
+          <div class="flex-1 md:block">
+            <div class="md:hidden text-center">
+              <h4 class="font-syne font-bold text-lg text-primary mb-xs">Activation du compte</h4>
+              <p class="font-jakarta text-sm text-on-surface-variant">Matricule + mot de passe choisi = activation instantanée.</p>
+            </div>
+            <div class="hidden md:block glass-card rounded-xl p-sm border-l-4 border-l-[#007bb5]">
+              <p class="font-jakarta text-xs text-on-surface-variant">Un OTP est envoyé par email pour confirmer votre identité.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex flex-col md:flex-row items-center gap-md reveal">
+          <div class="flex-1 text-right hidden md:block">
+            <h4 class="font-syne font-bold text-lg text-primary mb-xs">Validation OTP</h4>
+            <p class="font-jakarta text-sm text-on-surface-variant">Vérifiez votre identité via un code à usage unique envoyé par email.</p>
+          </div>
+          <div class="timeline-dot bg-[#F97316]">3</div>
+          <div class="flex-1 md:block">
+            <div class="md:hidden text-center">
+              <h4 class="font-syne font-bold text-lg text-primary mb-xs">Validation OTP</h4>
+              <p class="font-jakarta text-sm text-on-surface-variant">Code valable 10 minutes — votre email institutionnel IUT.</p>
+            </div>
+            <div class="hidden md:block glass-card rounded-xl p-sm border-l-4 border-l-[#F97316]">
+              <p class="font-jakarta text-xs text-on-surface-variant">Code valable 10 minutes. Option de renvoi disponible.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="flex flex-col md:flex-row-reverse items-center gap-md reveal">
+          <div class="flex-1 text-left hidden md:block">
+            <h4 class="font-syne font-bold text-lg text-primary mb-xs">Accès au Dashboard</h4>
+            <p class="font-jakarta text-sm text-on-surface-variant">Consultez les annonces de votre département et vos informations personnelles.</p>
+          </div>
+          <div class="timeline-dot bg-secondary">4</div>
+          <div class="flex-1 md:block">
+            <div class="md:hidden text-center">
+              <h4 class="font-syne font-bold text-lg text-primary mb-xs">Accès au Dashboard</h4>
+              <p class="font-jakarta text-sm text-on-surface-variant">JWT retourné — session sécurisée démarrée.</p>
+            </div>
+            <div class="hidden md:block glass-card rounded-xl p-sm border-l-4 border-l-secondary">
+              <p class="font-jakarta text-xs text-on-surface-variant">Accès token JWT avec refresh automatique pour une session continue.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flex flex-col md:flex-row items-center gap-md reveal">
+          <div class="flex-1 text-right hidden md:block">
+            <h4 class="font-syne font-bold text-lg text-primary mb-xs">Notifications Push</h4>
+            <p class="font-jakarta text-sm text-on-surface-variant">Restez informé en temps réel — même quand l'app est en arrière-plan.</p>
+          </div>
+          <div class="timeline-dot bg-[#3B6D11]">5</div>
+          <div class="flex-1 md:block">
+            <div class="md:hidden text-center">
+              <h4 class="font-syne font-bold text-lg text-primary mb-xs">Notifications Push</h4>
+              <p class="font-jakarta text-sm text-on-surface-variant">Firebase FCM — notifications instantanées sur tous vos appareils.</p>
+            </div>
+            <div class="hidden md:block glass-card rounded-xl p-sm border-l-4 border-l-[#3B6D11]">
+              <p class="font-jakarta text-xs text-on-surface-variant">Firebase FCM — alertes instantanées dès qu'une annonce est publiée.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Admin flow ── -->
+    <div class="mt-xl reveal">
+      <h3 class="font-syne font-bold text-xl text-secondary text-center mb-lg">Côté Administration</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter">
+        <div class="glass-card rounded-xl p-md text-center academic-border">
+          <span class="material-symbols-outlined text-primary text-3xl mb-sm block">login</span>
+          <h5 class="font-syne font-bold text-sm text-on-background mb-xs">Connexion Admin</h5>
+          <p class="font-jakarta text-xs text-on-surface-variant">Accès sécurisé avec compte ADMIN et JWT.</p>
+        </div>
+        <div class="glass-card rounded-xl p-md text-center academic-border">
+          <span class="material-symbols-outlined text-primary text-3xl mb-sm block">campaign</span>
+          <h5 class="font-syne font-bold text-sm text-on-background mb-xs">Créer une annonce</h5>
+          <p class="font-jakarta text-xs text-on-surface-variant">Titre, contenu, pièces jointes, date d'expiration.</p>
+        </div>
+        <div class="glass-card rounded-xl p-md text-center academic-border">
+          <span class="material-symbols-outlined text-primary text-3xl mb-sm block">send</span>
+          <h5 class="font-syne font-bold text-sm text-on-background mb-xs">Diffusion automatique</h5>
+          <p class="font-jakarta text-xs text-on-surface-variant">Notification push FCM envoyée à tous les étudiants.</p>
+        </div>
+        <div class="glass-card rounded-xl p-md text-center academic-border">
+          <span class="material-symbols-outlined text-primary text-3xl mb-sm block">bar_chart</span>
+          <h5 class="font-syne font-bold text-sm text-on-background mb-xs">Suivi des lectures</h5>
+          <p class="font-jakarta text-xs text-on-surface-variant">Statistiques en temps réel — taux de lecture, confirmations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ ABOUT ═══════════════════════════ -->
+<section id="about" class="py-xl px-margin-mobile md:px-margin-desktop mesh-light">
+  <div class="max-w-7xl mx-auto">
+    <!-- Hero about -->
+    <div class="text-center mb-lg reveal">
+      <span class="badge-sec mb-md inline-block">À PROPOS</span>
+      <h2 class="font-syne font-bold text-on-background" style="font-size:clamp(28px,4vw,40px)">
+        Né d'un besoin <span class="text-primary">réel</span> sur le campus
+      </h2>
+      <p class="font-jakarta text-on-surface-variant text-lg max-w-2xl mx-auto mt-sm" style="line-height:1.65">
+        CampusInfo est un projet académique réalisé dans le cadre de la soutenance de fin de cycle à l'IUT de Douala.
+      </p>
+    </div>
+
+    <!-- Bento problem / vision -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-lg">
+      <div class="glass-card rounded-xl p-lg reveal border-l-4 border-l-[#F97316]">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="material-symbols-outlined text-[#F97316] text-2xl">report_problem</span>
+          <h3 class="font-syne font-bold text-lg text-on-background">Le Problème</h3>
+        </div>
+        <p class="font-jakarta text-sm text-on-surface-variant" style="line-height:1.7">
+          La communication à l'IUT de Douala reposait sur des canaux fragmentés — affiches papier, groupes WhatsApp non officiels, emails non centralisés — entraînant des informations manquées, des malentendus et une perte de temps considérable pour les étudiants comme pour l'administration.
+        </p>
+      </div>
+      <div class="glass-card rounded-xl p-lg reveal border-l-4 border-l-primary">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="material-symbols-outlined text-primary text-2xl">lightbulb</span>
+          <h3 class="font-syne font-bold text-lg text-on-background">Notre Vision</h3>
+        </div>
+        <p class="font-jakarta text-sm text-on-surface-variant" style="line-height:1.7">
+          Unifier tous les canaux de communication académique dans une seule plateforme sécurisée, fiable et accessible. CampusInfo vise à moderniser l'expérience numérique à l'IUT — avec une API REST robuste, une authentification sécurisée et des notifications push en temps réel.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stack technique -->
+    <div class="glass-card rounded-xl p-lg mb-lg reveal">
+      <h3 class="font-syne font-bold text-lg text-on-background mb-md text-center">Stack Technique</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-sm">
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-primary text-2xl">hub</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">Django</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">Backend</span>
+        </div>
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-primary text-2xl">api</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">DRF</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">REST API</span>
+        </div>
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-primary text-2xl">token</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">SimpleJWT</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">Auth</span>
+        </div>
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-primary text-2xl">storage</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">PostgreSQL</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">Base de données</span>
+        </div>
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-[#F97316] text-2xl">notifications_active</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">Firebase FCM</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">Push Notif</span>
+        </div>
+        <div class="flex flex-col items-center gap-xs p-sm bg-surface-container rounded-xl text-center">
+          <span class="material-symbols-outlined text-primary text-2xl">cloud_upload</span>
+          <span class="font-jakarta text-xs font-bold text-on-background">Render</span>
+          <span class="font-jakarta text-xs text-on-surface-variant">Déploiement</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    <div class="reveal">
+      <h3 class="font-syne font-bold text-xl text-on-background text-center mb-md">L'Équipe de Développement</h3>
+      <p class="font-jakarta text-on-surface-variant text-center mb-lg text-sm">Les étudiants derrière la conception et la réalisation technique de CampusInfo.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-gutter max-w-3xl mx-auto">
+        <!-- Member 1 -->
+        <div class="glass-card rounded-xl p-md text-center">
+          <div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center mx-auto mb-sm text-white font-syne font-bold text-lg">LN</div>
+          <h4 class="font-syne font-bold text-on-background">Luca N.</h4>
+          <p class="font-jakarta text-xs text-primary font-semibold uppercase tracking-wider mb-sm">Lead Backend Developer</p>
+          <p class="font-jakarta text-xs text-on-surface-variant">Architecture Django, API REST, base de données &amp; déploiement.</p>
+          <div class="flex flex-wrap gap-xs justify-center mt-sm">
+            <span class="bg-surface-variant text-on-surface-variant text-xs px-sm py-0.5 rounded-full">Django</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs px-sm py-0.5 rounded-full">DRF</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs px-sm py-0.5 rounded-full">PostgreSQL</span>
+          </div>
+        </div>
+        <!-- Member 2 -->
+        <div class="glass-card rounded-xl p-md text-center">
+          <div class="w-16 h-16 rounded-full bg-[#ffdbca] flex items-center justify-center mx-auto mb-sm font-syne font-bold text-lg text-[#783200]">FX</div>
+          <h4 class="font-syne font-bold text-on-background">Frontend Dev</h4>
+          <p class="font-jakarta text-xs text-tertiary font-semibold uppercase tracking-wider mb-sm">Frontend &amp; UI/UX</p>
+          <p class="font-jakarta text-xs text-on-surface-variant">Design system, intégration React et expérience utilisateur étudiante.</p>
+          <div class="flex flex-wrap gap-xs justify-center mt-sm">
+            <span class="bg-surface-variant text-on-surface-variant text-xs px-sm py-0.5 rounded-full">React</span>
+            <span class="bg-surface-variant text-on-surface-variant text-xs px-sm py-0.5 rounded-full">Tailwind</span>
+          </div>
+        </div>
+        <!-- IUT badge -->
+        <div class="glass-card rounded-xl p-md text-center flex flex-col items-center justify-center bg-gradient-to-br from-surface-container-low to-white">
+          <span class="material-symbols-outlined text-primary text-4xl mb-sm" style="font-variation-settings:'FILL' 1">account_balance</span>
+          <h4 class="font-syne font-bold text-on-background">IUT de Douala</h4>
+          <p class="font-jakarta text-xs text-secondary font-semibold uppercase tracking-wider mb-sm">Établissement Académique</p>
+          <p class="font-jakarta text-xs text-on-surface-variant">Institut Universitaire de Technologie — Université de Douala, Cameroun.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ CTA FINAL ═══════════════════════════ -->
+<section class="py-xl px-margin-mobile md:px-margin-desktop bg-white">
+  <div class="max-w-4xl mx-auto">
+    <div class="rounded-2xl overflow-hidden reveal" style="background: linear-gradient(135deg, #006190 0%, #007bb5 50%, #0C2E4E 100%);">
+      <div class="p-lg text-center relative overflow-hidden">
+        <!-- Blur orbs inside -->
+        <div class="absolute w-64 h-64 rounded-full bg-white/10 blur-3xl -top-10 -left-10 pointer-events-none"></div>
+        <div class="absolute w-48 h-48 rounded-full bg-[#F97316]/20 blur-3xl bottom-0 right-0 pointer-events-none"></div>
+        <div class="relative z-10">
+          <h2 class="font-syne font-extrabold text-white mb-sm" style="font-size:clamp(24px,4vw,40px)">Prêt à moderniser votre campus ?</h2>
+          <p class="font-jakarta text-white/80 text-lg mb-lg max-w-xl mx-auto" style="line-height:1.65">
+            Rejoignez l'IUT de Douala dans la transition numérique avec CampusInfo.
+          </p>
+          <a href="#" class="glow-cta inline-block px-xl py-sm rounded-full font-jakarta text-sm font-bold">
+            Accéder à l'application
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer class="footer-bg py-xl px-margin-mobile md:px-margin-desktop text-inverse-on-surface">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-lg mb-lg">
+    <div class="md:col-span-2">
+      <span class="font-syne font-bold text-2xl text-white block mb-sm">Campus<span class="text-[#ffb690]">Info</span></span>
+      <p class="font-jakarta text-sm text-white/60 max-w-sm" style="line-height:1.7">
+        Plateforme officielle d'annonces et notifications pour l'IUT de Douala. Un écosystème numérique unifié pour étudiants, professeurs et administration.
+      </p>
+    </div>
+    <div>
+      <h5 class="font-syne font-bold text-white text-sm mb-md uppercase tracking-wider">Navigation</h5>
+      <div class="space-y-sm">
+        <a href="#accueil"   class="font-jakarta text-sm text-white/60 hover:text-white block transition-colors">Accueil</a>
+        <a href="#features"  class="font-jakarta text-sm text-white/60 hover:text-white block transition-colors">Fonctionnalités</a>
+        <a href="#how-works" class="font-jakarta text-sm text-white/60 hover:text-white block transition-colors">Comment ça marche</a>
+        <a href="#about"     class="font-jakarta text-sm text-white/60 hover:text-white block transition-colors">À propos</a>
+      </div>
+    </div>
+    <div>
+      <h5 class="font-syne font-bold text-white text-sm mb-md uppercase tracking-wider">Stack</h5>
+      <div class="space-y-sm">
+        <span class="font-jakarta text-sm text-white/60 block">Django + DRF</span>
+        <span class="font-jakarta text-sm text-white/60 block">PostgreSQL</span>
+        <span class="font-jakarta text-sm text-white/60 block">Firebase FCM</span>
+        <span class="font-jakarta text-sm text-white/60 block">React (Frontend)</span>
+        <span class="font-jakarta text-sm text-white/60 block">Render (Déploiement)</span>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/10 pt-md flex flex-col md:flex-row items-center justify-between gap-sm">
+    <p class="font-jakarta text-xs text-white/40">© 2025 IUT de Douala — CampusInfo. Excellence technologique &amp; académique.</p>
+    <div class="flex items-center gap-xs">
+      <span class="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse"></span>
+      <span class="font-jakarta text-xs text-white/40">API opérationnelle</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Burger menu
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  burger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+
+  // Close mobile menu on link click
+  mobileMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('section[id], header[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 100) current = sec.getAttribute('id');
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('text-primary', 'border-b-2', 'border-primary', 'pb-0.5');
+      link.classList.add('text-on-surface-variant');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('text-primary', 'border-b-2', 'border-primary', 'pb-0.5');
+        link.classList.remove('text-on-surface-variant');
+      }
+    });
+  });
+</script>
+</body>
+</html>

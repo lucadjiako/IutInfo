@@ -40,6 +40,28 @@ class Annonce(models.Model):
                           blank=True, null=True,
                           help_text="Laisser vide = jamais expirée"
                       )
+    
+    numero_telephone = models.CharField(
+    max_length=20,
+    blank=True,
+    null=True,
+    verbose_name="Numéro de téléphone"
+)
+    
+    # ── Archivage ─────────────────────────────────────────────
+    STATUT_CHOICES = (
+        ('active',   'Active'),
+        ('archivee', 'Archivée'),
+    )
+    statut         = models.CharField(
+                        max_length=20,
+                        choices=STATUT_CHOICES,
+                        default='active'
+                    )
+    date_archivage = models.DateTimeField(
+                        blank=True, null=True,
+                        help_text="Date à laquelle l'annonce a été archivée"
+                    )
 
     class Meta:
         ordering = ['-date_publication']
@@ -97,3 +119,4 @@ class Lecture(models.Model):
 
     def __str__(self):
         return f"{self.utilisateur.matricule} a lu « {self.annonce.titre} »"
+    

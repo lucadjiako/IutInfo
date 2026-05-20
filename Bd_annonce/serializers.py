@@ -101,6 +101,7 @@ class AnnonceCreateSerializer(serializers.ModelSerializer):
             'niveau_cible',
             'date_publication',
             'date_expiration',
+          
         ]
 
     def validate(self, data):

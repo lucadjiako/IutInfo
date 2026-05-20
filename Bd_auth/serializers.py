@@ -83,7 +83,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'matricule', 'email', 'nom', 'prenom', 'role',
             'filiere', 'niveau', 'departement', 'specialite',
-            'active', 'is_staff', 'created_at', 'updated_at',
+            'active', 'is_staff', 'created_at', 'updated_at','numero_telephone'
         ]
         read_only_fields = fields  # lecture seule — modification via endpoint dédié
 

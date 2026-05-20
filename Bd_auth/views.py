@@ -955,3 +955,21 @@ class DeactivateUser(APIView):
             },
             status=status.HTTP_200_OK
         )
+        
+class EnregistrerTokenFCM(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        token = request.data.get('token_fcm')
+        if not token:
+            return Response(
+                {"error": "token_fcm est requis."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        request.user.token_fcm = token
+        request.user.save(update_fields=['token_fcm'])
+        return Response(
+            {"message": "Token FCM enregistré avec succès."},
+            status=status.HTTP_200_OK
+        )
+        

@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
+from rest_framework import generics
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,12 +10,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .models import Annonce, PieceJointe, Lecture
+from .firebase import envoyer_notification_multiple
+from Bd_auth.models import Utilisateur
  
 from .serializers import (
     AnnonceListSerializer,
     AnnonceDetailSerializer,
     AnnonceCreateSerializer,
-    AnnonceCreateSerializer
+    AnnonceCreateSerializer,
+
+    
 )
 
 
@@ -117,13 +122,12 @@ class AnnonceList(APIView):
         serializer = AnnonceListSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
     def post(self, request):
-        """
-        POST /api/annonces/
-        Créer une annonce (professeur ou admin uniquement).
-        Pièces jointes : envoyer en multipart avec le champ 'fichiers'.
-        """
+    # """
+    # POST /api/annonces/
+    # Créer une annonce (professeur ou admin uniquement).
+    # Pièces jointes : envoyer en multipart avec le champ 'fichiers'.
+    # """
         if not (_est_admin(request.user) or _est_professeur(request.user)):
             return Response(
                 {"error": "Seuls les professeurs et les administrateurs peuvent créer des annonces."},
@@ -134,11 +138,11 @@ class AnnonceList(APIView):
         serializer.is_valid(raise_exception=True)
         annonce = serializer.save(auteur=request.user)
 
-        # Gestion des pièces jointes (optionnel)
+        # Gestion des pièces jointes
         fichiers = request.FILES.getlist('fichiers')
         for f in fichiers:
             if f.size > 10 * 1024 * 1024:  # 10 MB max
-                continue  # on skip les fichiers trop lourds
+                continue
             PieceJointe.objects.create(
                 annonce=annonce,
                 fichier=f,
@@ -146,10 +150,36 @@ class AnnonceList(APIView):
                 taille=f.size,
             )
 
-            return Response(
-                AnnonceDetailSerializer(annonce, context={'request': request}).data,
-                status=status.HTTP_201_CREATED
+        # ── FCM : en dehors du for ──────────────────────────
+        tokens = list(
+            Utilisateur.objects.filter(
+                token_fcm__isnull=False
+            ).exclude(
+                token_fcm=''
+            ).values_list('token_fcm', flat=True)
+        )
+
+        envoyer_notification_multiple(
+            tokens=tokens,
+            titre=annonce.titre,
+            corps=f"Nouvelle annonce : {annonce.contenu[:100]}",
+            data={"annonce_id": str(annonce.id)}
+        )
+        # ── SMS si annonce URGENTE (Orange + MTN + Camtel) ────────────
+        if serializer.instance.priorite == "URGENT":
+            from .sms import envoyer_sms_urgent
+            resultats_sms = envoyer_sms_urgent(serializer.instance)
+            logger.info(
+                f"SMS URGENT : {resultats_sms['succes']} succès / "
+                f"{resultats_sms['echecs']} échecs sur "
+                f"{resultats_sms['total']} destinataires"
             )
+        # ────────────────────────────────────────────────────
+
+        return Response(
+            AnnonceDetailSerializer(annonce, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 # ──────────────────────────────────────────────
@@ -233,7 +263,20 @@ class MarquerLu(APIView):
             },
             status=status.HTTP_200_OK
         )
+# ──────────────────────────────────────────────
+#  BOÎTE DES ANNONCES ARCHIVÉES
+# ──────────────────────────────────────────────
 
+class AnnonceArchiveeList(generics.ListAPIView):
+        permission_classes = [IsAuthenticated]
+        serializer_class   = AnnonceDetailSerializer
+
+        def get_queryset(self):
+            if not _est_admin(self.request.user):
+                return Annonce.objects.none()
+            return Annonce.objects.filter(
+                statut='archivee'
+            ).order_by('-date_archivage')
 
 # ──────────────────────────────────────────────
 #  STATISTIQUES (admin uniquement)
@@ -274,3 +317,4 @@ class AnnonceStats(APIView):
             },
             status=status.HTTP_200_OK
         )
+        

@@ -13,7 +13,8 @@ from .views import (
     PromoteToAdmin,
     SearchUsers,
     DeactivateUser,
-    DemoteAdmin
+    DemoteAdmin,
+    EnregistrerTokenFCM,
     
 )
 
@@ -39,4 +40,4 @@ urlpatterns = [
     path('deactivate-user/', DeactivateUser.as_view(), name='deactivate-user'),
     path('demote-admin/', DemoteAdmin.as_view(), name='demote-admin'),
     path('import-users/',      ImportUsers.as_view(),    name='auth-import-users'),
-]
+    path('token-fcm/', EnregistrerTokenFCM.as_view(), name='token-fcm'),]

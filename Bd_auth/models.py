@@ -64,6 +64,13 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    token_fcm = models.CharField(max_length=255, blank=True, null=True)
+    
+    numero_telephone = models.CharField(
+    max_length=20,
+    blank=True,
+    null=True,
+    verbose_name="Numéro de téléphone")
 
     # ── Config AbstractBaseUser ───────────────
     USERNAME_FIELD  = 'matricule'          # champ principal d'identification
